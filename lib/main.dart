@@ -1,125 +1,220 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'dart:ui';
 
 void main() {
-  runApp(const MyApp());
+  runApp(const CurrencyConverterApp());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class CurrencyConverterApp extends StatelessWidget {
+  const CurrencyConverterApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Currency Converter',
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
         useMaterial3: true,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: const CurrencyConverterScreen(),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
+class CurrencyConverterScreen extends StatefulWidget {
+  const CurrencyConverterScreen({super.key});
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  State<CurrencyConverterScreen> createState() =>
+      _CurrencyConverterScreenState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+class _CurrencyConverterScreenState extends State<CurrencyConverterScreen> {
+  String fromCurrency = 'USD';
+  String toCurrency = 'EUR';
+  double amount = 1;
+  String result = 'Result will appear here';
+  bool isLoading = false;
 
-  void _incrementCounter() {
+  final List<String> currencies = ['USD', 'EUR', 'GBP', 'JPY'];
+
+  Future<void> convertCurrency() async {
+    if (amount <= 0) {
+      setState(() {
+        result = 'Enter a valid amount';
+      });
+      return;
+    }
+
     setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
+      isLoading = true;
+      result = '';
     });
+
+    final url =
+        'https://api.frankfurter.app/latest?amount=$amount&from=$fromCurrency&to=$toCurrency';
+
+    try {
+      final response = await http.get(Uri.parse(url));
+      final data = jsonDecode(response.body);
+
+      if (data['rates'] != null && data['rates'][toCurrency] != null) {
+        setState(() {
+          result =
+          '$amount $fromCurrency = ${data['rates'][toCurrency].toStringAsFixed(2)} $toCurrency';
+          isLoading = false;
+        });
+      } else {
+        setState(() {
+          result = 'Conversion failed';
+          isLoading = false;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        result = 'Error fetching data';
+        isLoading = false;
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
     return Scaffold(
-      appBar: AppBar(
-        // TRY THIS: Try changing the color here to a specific color (to
-        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-        // change color while the other colors stay the same.
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
-      ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          //
-          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
-          // action in the IDE, or press "p" in the console), to see the
-          // wireframe for each widget.
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Color(0xFFa1c4fd), Color(0xFFc2e9fb)],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+              ),
             ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
+          ),
+          BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+            child: Container(
+              color: Colors.white.withOpacity(0),
+            ),
+          ),
+          Center(
+            child: Container(
+              width: 320,
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(25),
+                border: Border.all(color: Colors.white.withOpacity(0.3)),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.2),
+                    blurRadius: 10,
+                  ),
+                ],
+              ),
+              child: buildContent(),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget buildContent() {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const Text(
+          'Currency Converter',
+          style: TextStyle(
+              fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black87),
+        ),
+        const SizedBox(height: 20),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            DropdownButton<String>(
+              value: fromCurrency,
+              dropdownColor: Colors.white,
+              items: currencies.map((currency) {
+                return DropdownMenuItem(
+                  value: currency,
+                  child: Text(currency),
+                );
+              }).toList(),
+              onChanged: (value) {
+                setState(() {
+                  fromCurrency = value!;
+                });
+              },
+            ),
+            const SizedBox(width: 10),
+            const Icon(Icons.swap_horiz, color: Colors.black54),
+            const SizedBox(width: 10),
+            DropdownButton<String>(
+              value: toCurrency,
+              dropdownColor: Colors.white,
+              items: currencies.map((currency) {
+                return DropdownMenuItem(
+                  value: currency,
+                  child: Text(currency),
+                );
+              }).toList(),
+              onChanged: (value) {
+                setState(() {
+                  toCurrency = value!;
+                });
+              },
             ),
           ],
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+        const SizedBox(height: 20),
+        TextField(
+          keyboardType: TextInputType.number,
+          decoration: InputDecoration(
+            hintText: 'Enter amount',
+            filled: true,
+            fillColor: Colors.white.withOpacity(0.8),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+          onChanged: (value) {
+            amount = double.tryParse(value) ?? 1;
+          },
+        ),
+        const SizedBox(height: 20),
+        ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xFF4facfe),
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(15),
+            ),
+          ),
+          onPressed: convertCurrency,
+          child: const Text(
+            'Convert',
+            style: TextStyle(fontSize: 18, color: Colors.white),
+          ),
+        ),
+        const SizedBox(height: 20),
+        isLoading
+            ? const CircularProgressIndicator(color: Colors.blue)
+            : Text(
+          result,
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+            fontSize: 18,
+            color: Colors.black87,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ],
     );
   }
 }
