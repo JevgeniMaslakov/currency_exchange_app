@@ -13,9 +13,10 @@ class CurrencyConverterApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'Currency Converter',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blueAccent),
         useMaterial3: true,
       ),
       home: const CurrencyConverterScreen(),
@@ -89,30 +90,30 @@ class _CurrencyConverterScreenState extends State<CurrencyConverterScreen> {
           Container(
             decoration: const BoxDecoration(
               gradient: LinearGradient(
-                colors: [Color(0xFFa1c4fd), Color(0xFFc2e9fb)],
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
+                colors: [Color(0xFF74ebd5), Color(0xFFACB6E5)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
               ),
             ),
           ),
           BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
-            child: Container(
-              color: Colors.white.withOpacity(0),
-            ),
+            filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+            child: Container(color: Colors.white.withOpacity(0)),
           ),
           Center(
             child: Container(
-              width: 320,
+              width: 340,
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.2),
+                color: Colors.white.withOpacity(0.15),
                 borderRadius: BorderRadius.circular(25),
                 border: Border.all(color: Colors.white.withOpacity(0.3)),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.2),
-                    blurRadius: 10,
+                    color: Colors.blue.withOpacity(0.3),
+                    blurRadius: 20,
+                    spreadRadius: 2,
+                    offset: const Offset(0, 10),
                   ),
                 ],
               ),
@@ -129,17 +130,18 @@ class _CurrencyConverterScreenState extends State<CurrencyConverterScreen> {
       mainAxisSize: MainAxisSize.min,
       children: [
         const Text(
-          'Currency Converter',
+          '💱 Currency Converter',
           style: TextStyle(
-              fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black87),
+              fontSize: 26, fontWeight: FontWeight.w600, color: Colors.black87),
         ),
-        const SizedBox(height: 20),
+        const SizedBox(height: 24),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             DropdownButton<String>(
               value: fromCurrency,
               dropdownColor: Colors.white,
+              borderRadius: BorderRadius.circular(15),
               items: currencies.map((currency) {
                 return DropdownMenuItem(
                   value: currency,
@@ -152,12 +154,13 @@ class _CurrencyConverterScreenState extends State<CurrencyConverterScreen> {
                 });
               },
             ),
-            const SizedBox(width: 10),
-            const Icon(Icons.swap_horiz, color: Colors.black54),
-            const SizedBox(width: 10),
+            const SizedBox(width: 12),
+            const Icon(Icons.sync_alt, color: Colors.black54),
+            const SizedBox(width: 12),
             DropdownButton<String>(
               value: toCurrency,
               dropdownColor: Colors.white,
+              borderRadius: BorderRadius.circular(15),
               items: currencies.map((currency) {
                 return DropdownMenuItem(
                   value: currency,
@@ -178,23 +181,25 @@ class _CurrencyConverterScreenState extends State<CurrencyConverterScreen> {
           decoration: InputDecoration(
             hintText: 'Enter amount',
             filled: true,
-            fillColor: Colors.white.withOpacity(0.8),
+            fillColor: Colors.white.withOpacity(0.9),
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(15),
             ),
           ),
           onChanged: (value) {
             amount = double.tryParse(value) ?? 1;
           },
         ),
-        const SizedBox(height: 20),
+        const SizedBox(height: 24),
         ElevatedButton(
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF4facfe),
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            backgroundColor: const Color(0xFF6DD5FA),
+            padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 14),
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(15),
+              borderRadius: BorderRadius.circular(20),
             ),
+            elevation: 10,
+            shadowColor: Colors.blueAccent.withOpacity(0.5),
           ),
           onPressed: convertCurrency,
           child: const Text(
@@ -202,9 +207,9 @@ class _CurrencyConverterScreenState extends State<CurrencyConverterScreen> {
             style: TextStyle(fontSize: 18, color: Colors.white),
           ),
         ),
-        const SizedBox(height: 20),
+        const SizedBox(height: 24),
         isLoading
-            ? const CircularProgressIndicator(color: Colors.blue)
+            ? const CircularProgressIndicator(color: Colors.blueAccent)
             : Text(
           result,
           textAlign: TextAlign.center,
